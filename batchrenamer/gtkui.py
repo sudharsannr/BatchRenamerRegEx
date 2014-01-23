@@ -63,8 +63,8 @@ class RenameFiles():
         self.glade = gtk.glade.XML(get_resource("rename.glade"))
         self.window = self.glade.get_widget("RenameDialog")
         self.window.set_transient_for(component.get("MainWindow").window)
-        self.template_field = self.glade.get_widget("filename_field")
-        self.default_season_field = self.glade.get_widget("default_season")
+        self.find_field = self.glade.get_widget("find_field")
+        self.replace_field = self.glade.get_widget("replace_field")
 
         dic = {"on_ok_clicked": self.ok,
                 "on_cancel_clicked": self.cancel}
@@ -97,38 +97,16 @@ class RenameFiles():
             self.rename(model[path])
 
     def rename(self, row):
-        """Clean the name, and try to add the season and episode info."""
-        # pre-emptively try and find the season and episode numbers
+        """Rename according to the user supplied regular expression."""
         if row[0] and row[1]:
-            default_season = self.default_season_field.get_value_as_int()
-            season = None
-            episode = None
             new_name = None
 
             old_name = row[2]
 
-            # clean up the name
-            new_name = self.clean(old_name)
-
-            # try and extract season + episode numbering
-            season, episode, new_name = self.parse_season_episode(new_name)
-
-            # last resort, guess the episode number and use the default season
-            if season is None:
-                episode, name = self.guess(new_name)
-
-                if episode:
-                    new_name = name
-                    season = default_season
-
-            if len(self.template_field.get_text()) > 0:
-                file_extension = os.path.splitext(old_name)[1]
-                new_name = self.template_field.get_text() + file_extension
-
-            new_name = new_name.replace('^s', 'S' + str(season).zfill(2))
-            new_name = new_name.replace('^e', 'E' + str(episode).zfill(2))
-            # annoying v2 tags still stick around, so get rid of them
-            new_name = re.sub('\s?v\d\s?', '', new_name)
+            if len(self.find_field.get_text()) > 0 and len(self.replace_field.get_text()) > 0:
+                new_name = re.sub(self.find_field.get_text(), self.replace_field.get_text(), old_name)
+            else:
+                new_name = old_name
 
             row[3] = new_name
         elif row[0] and not row[1]:
@@ -139,108 +117,6 @@ class RenameFiles():
         for child in row.iterchildren():
             child[0] = row[0]
             self.rename(child)
-
-    def fix_episode(self, matchobj):
-        """Used by the clean function to fix season capitalisation"""
-        return matchobj.group(0).upper()
-
-    def clean(self, s):
-        """Replace underscores with spaces, capitalise words and remove
-        brackets and anything inbetween them.
-        """
-        opening_brackets = ['(', '[', '<', '{']
-        closing_brackets = [')', ']', '>', '}']
-        for i in range(len(opening_brackets)):
-            b = opening_brackets[i]
-            c = closing_brackets[i]
-
-            while b in s:
-                start = s.find(b)
-                end = s.find(c) + 1
-
-                s = re.sub(re.escape(s[start:end]), '', s)
-
-        results = os.path.splitext(s)
-        extension = results[1]
-        s = results[0]
-
-        s = s.replace('_', ' ')
-        s = s.replace('.', ' ')
-        s = s.strip()
-        words = s.split(' ')
-        s = ' '.join([w.capitalize() for w in words[:-1]])
-
-        #results = os.path.splitext(words[-1])
-        #words[-1] = results[0].upper()
-
-        s += ' %s%s' % (words[-1], extension)
-
-        # this fixes the problem with the E before episode numbers being lowercase.
-        s = re.sub('S\d+(e)\d+', self.fix_episode, s)
-
-        return s
-
-    def parse_season_episode(self, s):
-        """Try and parse the season and episode numbers from the filename.
-
-        Searches for the SxxExx, SEE and SxEE season/episode structures."""
-        season = None
-        episode = None
-
-        results = re.search(r'S(\d+)E(\d+)', s)
-
-        if results:
-            s = re.sub('S(\d+)E(\d+)', '^s^e', s)
-            season = int(results.groups()[0])
-            episode = int(results.groups()[1])
-            return (season, episode, s)
-
-        results = re.search(' (\d)(\d\d) ', s)
-        if results:
-            s = re.sub(' \d\d\d ', '^s^e', s)
-            season = int(results.groups()[0])
-            episode = int(results.groups()[1])
-            return (season, episode, s)
-
-        results = re.search('(\d)[Xx](\d\d)', s)
-        if results:
-            s = re.sub('\d[Xx]\d\d', '^s^e', s)
-            season = int(results.groups()[0])
-            episode = int(results.groups()[1])
-
-            return (season, episode, s)
-
-        return (season, episode, s)
-
-    def guess(self, s):
-        """This is called if nothing else has been found. Takes one last swoop.
-
-        It assumes that the first number it finds is the episode number, and
-        uses the default season number set by the user to set the season."""
-        # plain old HOPE that's an episode number, not a TV show number.
-        results = re.findall(r'\d+', s)
-        words = s.split(' ')
-
-        extension = os.path.splitext(s)[1]
-
-        pattern = re.compile(r'(\d+)')
-        for w in words:
-            r = pattern.search(w)
-
-            if r:
-                episode = r.groups()[0]
-                # filenames with years in them!
-                if len(episode) > 2:
-                    continue
-                i = words.index(w)
-                s = ' '.join(words[:i] + ['^s^e'] + words[i + 1:])
-
-                if i == len(words) - 1:
-                    s += extension
-
-                return episode, s
-
-        return None, None
 
     def edit_row(self, cell, path, new_text):
         """Set the new name of folders to what was typed."""
