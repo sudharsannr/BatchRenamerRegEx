@@ -1,5 +1,5 @@
 #
-# setup.py
+# core.py
 #
 # Copyright (C) 2011 Nathan Hoad <nathan@getoffmalawn.com>
 #
@@ -38,37 +38,35 @@
 #    statement from all source files in the program, then also delete it here.
 #
 
-from setuptools import setup
+from deluge.plugins.pluginbase import CorePluginBase
+import deluge.component as component
+import deluge.configmanager
+from deluge.core.rpcserver import export
 
-__plugin_name__ = "BatchRenamerRegEx"
-__author__ = "Nathan Hoad, sstamoulis, Grewfisk"
-__author_email__ = ""
-__version__ = "0.3.10"
-__url__ = "https://github.com/Grewfisk/batchrenamerregex"
-__license__ = "GPLv3"
-__description__ = ""
-__long_description__ = """"""
-__pkg_data__ = {__plugin_name__.lower(): ["template/*", "data/*"]}
+from deluge.log import LOG as log
 
-setup(
-    name=__plugin_name__,
-    version=__version__,
-    description=__description__,
-    author=__author__,
-    author_email=__author_email__,
-    url=__url__,
-    license=__license__,
-    long_description=__long_description__ if __long_description__ else __description__,
+DEFAULT_PREFS = {
+    "test":"NiNiNi"
+}
 
-    packages=[__plugin_name__.lower()],
-    package_data = __pkg_data__,
+class Core(CorePluginBase):
+    def enable(self):
+        # self.config = deluge.configmanager.ConfigManager("batchrenamerregex.conf", DEFAULT_PREFS)
+        self.core = component.get("Core")
+        self.tor_manager = component.get("TorrentManager")
 
-    entry_points="""
-    [deluge.plugin.core]
-    %s = %s:CorePlugin
-    [deluge.plugin.gtkui]
-    %s = %s:GtkUIPlugin
-    [deluge.plugin.web]
-    %s = %s:WebUIPlugin
-    """ % ((__plugin_name__, __plugin_name__.lower())*3)
-)
+    def disable(self):
+        pass
+
+    def update(self):
+        pass
+
+    @export
+    def get_torrent_files(self, tor_id):
+        """Return the files associated with tor_id"""
+        f = self.tor_manager[tor_id].get_files()
+        return (tor_id, f)
+
+    @export
+    def rename_torrent_files(self, tor_id, files):
+        self.tor_manager[tor_id].rename_files(files)
