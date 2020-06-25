@@ -58,7 +58,6 @@ class RenameFiles():
     def __init__(self, tor_id, files):
         self.tor_id = tor_id
         self.files = files
-        self.exclude_ext = False
 
     def run(self):
         """Build the GUI and display it."""
@@ -67,15 +66,14 @@ class RenameFiles():
         self.window.set_transient_for(component.get("MainWindow").window)
         self.find_field = self.glade.get_widget("find_field")
         self.replace_field = self.glade.get_widget("replace_field")
+        self.ext_toggle = self.glade.get_widget("ext")
 
         dic = {
             "on_ok_clicked": self.ok,
             "on_cancel_clicked": self.cancel,
-            "on_ext_toggled": self.on_ext_toggled
         }
 
         self.glade.signal_autoconnect(dic)
-        log.debug("Signal connected")
 
         self.build_tree_store()
         self.load_tree()
@@ -102,10 +100,6 @@ class RenameFiles():
         else:
             self.rename(model[path])
 
-    def on_ext_toggled(self, button):
-        self.exclude_ext = button.get_active()
-        log.debug("checkbox toggled: current value: " + button.get_active() + " Flag value: " + self.exclude_ext)
-
     def rename(self, row):
         """Rename according to the user supplied regular expression."""
         if row[0] and row[1]:
@@ -113,7 +107,7 @@ class RenameFiles():
             old_name = row[2]
             ext = ""
 
-            if self.exclude_ext:
+            if self.ext_toggle.get_active():
                 old_name, ext = os.path.splitext(row[2])
 
             if len(self.find_field.get_text()) > 0 and len(self.replace_field.get_text()) > 0:
@@ -127,7 +121,7 @@ class RenameFiles():
             else:
                 new_name = old_name
 
-            if self.exclude_ext:
+            if self.ext_toggle.get_active():
                 new_name += ext
 
             row[3] = new_name
