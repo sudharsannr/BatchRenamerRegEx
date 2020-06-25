@@ -5,8 +5,8 @@
   <widget class="GtkDialog" id="RenameDialog">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
-    <property name="modal">True</property>
     <property name="title" translatable="yes">Rename Files</property>
+    <property name="modal">True</property>
     <property name="default_width">1200</property>
     <property name="default_height">800</property>
     <property name="destroy_with_parent">True</property>
@@ -91,7 +91,7 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkHBox" id="hbox1">
+          <widget class="GtkHBox" id="hbox2">
             <property name="height_request">35</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -99,7 +99,7 @@
               <widget class="GtkLabel" id="label5">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="default_width">600</property>
+                <property name="xpad">2</property>
                 <property name="label" translatable="yes">Use \d to match a digit. &lt;i&gt;Example: S01E\d\d Episode Name&lt;/i&gt;</property>
                 <property name="use_markup">True</property>
               </widget>
@@ -123,10 +123,10 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="label6">
+              <widget class="GtkLabel" id="label1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="default_width">600</property>
+                <property name="xpad">2</property>
                 <property name="label" translatable="yes">Use \# to insert captured text. &lt;i&gt;Example: S\1E\2 - \3&lt;/i&gt;</property>
                 <property name="use_markup">True</property>
               </widget>
@@ -144,14 +144,15 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkHBox" id="hbox1">
+          <widget class="GtkHBox" id="hbox3">
             <property name="height_request">35</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <widget class="GtkLabel" id="label5">
+              <widget class="GtkLabel" id="label3">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="xpad">2</property>
                 <property name="label" translatable="yes">Use ( ) to capture text to be inserted into the finished name. &lt;i&gt;Example: S(\d\d)E(\d\d) (Episode Name)&lt;/i&gt;</property>
                 <property name="use_markup">True</property>
               </widget>
@@ -159,6 +160,20 @@
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkCheckButton" id="ext">
+                <property name="label" translatable="yes">Exclude file extension</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="draw_indicator">True</property>
+              </widget>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">False</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </widget>
@@ -169,12 +184,12 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkHBox" id="hbox1">
+          <widget class="GtkHBox" id="hbox4">
             <property name="height_request">35</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <widget class="GtkLabel" id="label5">
+              <widget class="GtkLabel" id="label7">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes"> . ^ $ * + ? { } [ ] | should be escaped using \ to match characters in the filename. &lt;i&gt;Example: \[GRP\]\.Episode\.Name&lt;/i&gt;</property>

@@ -54,9 +54,11 @@ from common import get_resource
 
 class RenameFiles():
     """Class to wrap up the GUI and all filename processing functions"""
+
     def __init__(self, tor_id, files):
         self.tor_id = tor_id
         self.files = files
+        self.exclude_ext = False
 
     def run(self):
         """Build the GUI and display it."""
@@ -66,8 +68,11 @@ class RenameFiles():
         self.find_field = self.glade.get_widget("find_field")
         self.replace_field = self.glade.get_widget("replace_field")
 
-        dic = {"on_ok_clicked": self.ok,
-                "on_cancel_clicked": self.cancel}
+        dic = {
+            "on_ok_clicked": self.ok,
+            "on_cancel_clicked": self.cancel,
+            "on_ext_toggled": self.on_ext_toggled
+        }
 
         self.glade.signal_autoconnect(dic)
 
@@ -96,17 +101,32 @@ class RenameFiles():
         else:
             self.rename(model[path])
 
+    def on_ext_toggled(self, button):
+        self.exclude_ext = button.get_active()
+
     def rename(self, row):
         """Rename according to the user supplied regular expression."""
         if row[0] and row[1]:
             new_name = None
-
             old_name = row[2]
+            ext = ""
+
+            if self.exclude_ext:
+                old_name, ext = os.path.splitext(row[2])
 
             if len(self.find_field.get_text()) > 0 and len(self.replace_field.get_text()) > 0:
-                new_name = re.sub(self.find_field.get_text(), self.replace_field.get_text(), old_name)
+                replace_field = self.replace_field.get_text()
+                if replace_field.startswith(r"\U"):
+                    new_name = re.sub(self.find_field.get_text(), replace_field[2:], old_name).upper()
+                elif replace_field.startswith(r"\L"):
+                    new_name = re.sub(self.find_field.get_text(), replace_field[2:], old_name).lower()
+                else:
+                    new_name = re.sub(self.find_field.get_text(), replace_field, old_name)
             else:
                 new_name = old_name
+
+            if self.exclude_ext:
+                new_name += ext
 
             row[3] = new_name
         elif row[0] and not row[1]:
@@ -285,7 +305,7 @@ class GtkUI(GtkPluginBase):
     def enable(self):
         self.glade = gtk.glade.XML(get_resource("config.glade"))
 
-        #component.get("Preferences").add_page("BatchRenamerRegEx", self.glade.get_widget("batch_prefs"))
+        # component.get("Preferences").add_page("BatchRenamerRegEx", self.glade.get_widget("batch_prefs"))
 
         # add the MenuItem to the context menu.
         torrentmenu = component.get("MenuBar").torrentmenu
@@ -298,7 +318,7 @@ class GtkUI(GtkPluginBase):
         torrentmenu.show_all()
 
     def disable(self):
-        #component.get("Preferences").remove_page("BatchRenamerRegEx")
+        # component.get("Preferences").remove_page("BatchRenamerRegEx")
         component.get("MenuBar").torrentmenu.remove(self.menu_item)
 
     def rename_selected_torrent(self, arg):
