@@ -75,6 +75,7 @@ class RenameFiles():
         }
 
         self.glade.signal_autoconnect(dic)
+        log.debug("Signal connected")
 
         self.build_tree_store()
         self.load_tree()
@@ -103,6 +104,7 @@ class RenameFiles():
 
     def on_ext_toggled(self, button):
         self.exclude_ext = button.get_active()
+        log.debug("checkbox toggled: current value: " + button.get_active() + " Flag value: " + self.exclude_ext)
 
     def rename(self, row):
         """Rename according to the user supplied regular expression."""
