@@ -43,6 +43,7 @@ import re
 import os
 
 from deluge.log import LOG as log
+from deluge.log import setupLogger
 from deluge.ui.client import client
 from deluge.plugins.pluginbase import GtkPluginBase
 import deluge.component as component
@@ -50,6 +51,7 @@ import deluge.common
 from deluge.core.torrent import Torrent
 
 from common import get_resource
+setupLogger()
 
 
 class RenameFiles():
