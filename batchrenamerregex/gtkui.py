@@ -320,10 +320,13 @@ class GtkUI(GtkPluginBase):
     def rename_selected_torrent(self, arg):
         torrent_id = component.get("TorrentView").get_selected_torrent()
         client.batchrenamerregex.get_torrent_files(torrent_id).addCallback(self.build_dialog)
+        log.info(client.batchrenamerregex.get_torrent_files(torrent_id))
 
     def build_dialog(self, result):
         """Display the dialog using the torrent ID and files."""
         tor_id = result[0]
         files = result[1]
+        log.info("Torrent files:")
+        log.info(files)
         r = RenameFiles(tor_id, files)
         r.run()
