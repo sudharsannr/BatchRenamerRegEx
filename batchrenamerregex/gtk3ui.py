@@ -38,6 +38,8 @@
 #    statement from all source files in the program, then also delete it here.
 #
 
+import gi
+gi.require_version('Gtk', '3.0') 
 from gi.repository import Gtk
 import re
 import os
