@@ -38,6 +38,7 @@
 #    statement from all source files in the program, then also delete it here.
 #
 
+from __future__ import unicode_literals
 from deluge.plugins.pluginbase import CorePluginBase
 import deluge.component as component
 import deluge.configmanager

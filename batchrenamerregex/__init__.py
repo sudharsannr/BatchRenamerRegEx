@@ -38,7 +38,14 @@
 #    statement from all source files in the program, then also delete it here.
 #
 
+from __future__ import unicode_literals
 from deluge.plugins.init import PluginInitBase
+
+class Gtk3UIPlugin(PluginInitBase):
+    def __init__(self, plugin_name):
+        from .gtk3ui import Gtk3UI as _plugin_cls
+        self._plugin_cls = _plugin_cls
+        super(Gtk3UIPlugin, self).__init__(plugin_name)
 
 class CorePlugin(PluginInitBase):
     def __init__(self, plugin_name):
